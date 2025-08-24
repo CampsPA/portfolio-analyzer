@@ -1,22 +1,18 @@
 import sys
 import os
 import numpy as np
-
-from data.notebooks.reports.src.db_setup import insert_adjusted_prices, clear_db_tables
+from db_setup import insert_adjusted_prices
+from data_pipeline import StockDataFetcher
+from analysis import PortfolioAnalyzer
+from portfolio_optimizer import PortfolioOptimizer
+from db_setup import save_performance_metrics, save_portfolio_allocations
+from database import get_engine
+from db_setup import create_tables
+from db_setup import clear_db_tables
 
 # Add the parent directory of src to the Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from data_pipeline import StockDataFetcher
-from analysis import PortfolioAnalyzer
-from portfolio_optimizer import PortfolioOptimizer
-from visualization import Visualizer
-from db_setup import save_performance_metrics, save_portfolio_allocations
-from database import get_engine
-from db_setup import create_tables
-
-import sys
-from db_setup import clear_db_tables
 # Clear tables if data exists prior to running the program
 if clear_db_tables():
     sys.exit()

@@ -94,9 +94,12 @@ class Visualizer:
     # Create a heatmap to display the correlation matrix
     def correlation_heatmap(self):
         corr_matrix = self.analyzer.calculate_correlation_matrix()
-        corr_matrix = sns.heatmap(corr_matrix, annot= True, cmap='coolwarm', fmt='.2f')
-        plt.title('Correlation Matrix Heatmap')
-        plt.show()
+        # Create figure and axes
+        fig, ax = plt.subplots(figsize=(8, 6))
+        sns.heatmap(corr_matrix, annot=True,
+        cmap='coolwarm', fmt='.2f', ax=ax)
+        ax.set_title('Correlation Matrix Heatmap')
+        return fig # Return figure instead of calling plt.show()
 
     # Create a heatmap to display the covariance matrix
     def covariance_heatmap(self):
