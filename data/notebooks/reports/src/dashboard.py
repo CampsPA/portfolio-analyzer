@@ -7,6 +7,7 @@ from visualization import Visualizer
 from data_pipeline import StockDataFetcher
 from analysis import PortfolioAnalyzer
 from portfolio_optimizer import PortfolioOptimizer
+from db_setup import save_performance_metrics, save_portfolio_allocations, insert_adjusted_prices, clear_db_tables
 
 # --- Page config --- st.set_page_config(page_title="Portfolio Analyzer", layout="wide")
 
@@ -22,6 +23,51 @@ tickers = [ticker.strip().upper() for ticker in tickers_input.split(',') if tick
 start_date = st.sidebar.date_input("Start Date")
 end_date = st.sidebar.date_input("End Date")
 fetch_data_btn = st.sidebar.button("Fetch Data")
+
+# --- Always show Save Data Button in Sidebar ---
+st.sidebar.markdown("---")  # separator line
+st.sidebar.subheader("Database Actions")
+
+# Save button
+save_data_btn = st.sidebar.button("💾 Save to Database")
+
+# Clear button
+if st.sidebar.button("🗑 Clear Database"):
+    cleared = clear_db_tables()
+    if cleared:
+        st.sidebar.success("✅ Database cleared!")
+    else:
+        st.sidebar.error("❌ Failed to clear database")
+
+
+if save_data_btn:
+    price_data = st.session_state.get("price_data", None)
+    if price_data is None:
+        st.sidebar.error("⚠️ No data available. Please fetch data first.")
+    else:
+        # Save performance metrics
+        save_performance_metrics(price_data)
+
+        # Optimize portfolio and save allocations
+        analyzer = PortfolioAnalyzer(price_data)
+        optimizer = PortfolioOptimizer(analyzer)
+        best_weights = optimizer.run_optimization()
+        expected_return, volatility, sharpe_ratio = optimizer.portfolio_performance(best_weights)
+        min_vol_weights = optimizer.min_volatility()
+
+        save_portfolio_allocations(
+            weights=best_weights,
+            price_data=price_data,
+            optimized_sharpe=sharpe_ratio,
+            optimized_volatility=volatility,
+            min_volatility_weights=min_vol_weights
+        )
+
+        # Insert adjusted close prices
+        insert_adjusted_prices(price_data)
+
+        st.sidebar.success("✅ Data saved successfully!")
+
 
 # --- Fetch data ---
 if fetch_data_btn:
@@ -72,8 +118,11 @@ elif page == "Portfolio Metrics":
         visualizer = Visualizer(analyzer)
         fig = visualizer.correlation_heatmap()
         st.pyplot(fig)
+
     else:
         st.warning("Please fetch price data first from the sidebar.")
+
+
 
 # --- Portfolio Optimization Page ---
 elif page == "Portfolio Optimization":
@@ -94,3 +143,4 @@ elif page == "Portfolio Optimization":
         st.write(f"Sharpe Ratio: {sharpe_ratio:.4f}")
     else:
         st.warning("Please fetch price data first from the sidebar.")
+

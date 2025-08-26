@@ -133,12 +133,13 @@ def insert_adjusted_prices(df: pd.DataFrame):
                         }
                     )
 
-
+# Commenting out this section since streamlit does not accept input()
+# Keeping the logic for debugging purposes.
 def clear_db_tables():
-    confirm = input("Do you want to clear all tables? (yes/no): ").strip().lower()
-    if confirm != 'yes':
-        print("Aborted clearing tables.")
-        return False
+    #confirm = input("Do you want to clear all tables? (yes/no): ").strip().lower()
+    #if confirm != 'yes':
+        #print("Aborted clearing tables.")
+        #return False
 
     with engine.begin() as conn:
         conn.execute(text("DELETE FROM adjusted_prices"))
